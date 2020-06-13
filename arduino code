@@ -1,0 +1,211 @@
+//Program to 
+
+#include <LiquidCrystal.h>//import the LCD library
+
+LiquidCrystal lcd(13, 12, 5, 4, 3, 2); // Sensor sensitivity value set
+
+// the setup routine runs once when you press reset:
+
+int buzzer=A3;             // For buzzer 
+
+int relay =9;             // For relay  
+
+int count=0;             //to count the number of times key pressed
+
+int sensorValue=A0;       //for current sensor value
+
+int val,Setref;             // user set sensor value
+
+int samples = 50;
+
+byte buzzerD[8] ={ 0b00000,
+
+                   0b10101,
+
+                   0b00000,
+
+                   0b01110,
+
+                   0b01110,
+
+                   0b00000,
+
+                   0b10101,
+
+                   0b00000
+
+                   };
+
+ byte blankD[8] ={ 0b00000,
+
+                   0b00000,
+
+                   0b00000,
+
+                   0b00000,
+
+                   0b00000,
+
+                   0b00000,
+
+                   0b00000,
+
+                   0b00000
+
+                   };                  
+
+void setup() {
+
+  // initialize serial communication at 9600 bits per second:
+
+  Serial.begin(9600);
+
+  pinMode(buzzer, OUTPUT);
+
+  pinMode(relay, OUTPUT);
+
+  lcd.begin(16,2);
+
+  lcd.setCursor(0,0);
+
+  lcd.print("Engineers Garage");
+
+  lcd.setCursor(0,1);
+
+  lcd.print(" MQ7 Gas Sensor ");  
+
+  delay(3000);
+
+  lcd.setCursor(0,1);
+
+  lcd.print("                ");   
+
+for(int i =0;i<samples;i++){
+
+  val = analogRead(0);
+
+  val = map(val, 0, 1023, 0, 255);
+
+  delay(100);
+
+}
+
+ Setref=val; 
+
+ Setref= Setref - 20;
+
+ lcd.setCursor(12,1);
+
+ printDigits3(Setref);
+
+}
+
+
+// the loop routine runs over and over again forever:
+
+void loop() {
+
+  lcd.setCursor(0,0);
+
+  lcd.print("Engineers Garage");
+
+  lcd.setCursor(0,1);
+
+  lcd.print(" MQ7 Gas Sensor ");  
+
+  digitalWrite(buzzer,LOW);
+
+  digitalWrite(relay,LOW);
+
+  // read the input on analog pin 0:
+
+  val = analogRead(0);
+
+  val = map(val, 0, 1023, 0, 255);
+
+  digitalWrite(buzzer,LOW);
+
+  sensorValue = analogRead(A0);
+
+  //lcd.setCursor(6,1);
+
+  Serial.println(val);
+
+ // printDigits3(val);
+
+  delay(1000);        // delay in between reads for stability
+
+  if(val<=Setref){
+
+    lcd.clear();
+
+    lcd.setCursor(5,0);
+
+    lcd.print("Alert!!!        ");
+
+    lcd.setCursor(5,1);
+
+    lcd.print("Alert!!!        ");
+
+    digitalWrite(relay,HIGH);
+
+    for(int i=0;i<=5;i++)
+
+    {
+
+    lcd.createChar(1,buzzerD);
+
+    lcd.setCursor(0,1);
+
+    lcd.write(1);
+
+    digitalWrite(buzzer,HIGH);
+
+    delay(1000);
+
+    lcd.createChar(2,blankD);
+
+    lcd.setCursor(0,1);
+
+    lcd.write(2);  
+
+    digitalWrite(buzzer,LOW);
+
+    delay(1000);
+
+    
+
+    } 
+
+  }
+
+  }
+
+void printDigits3(int digits)  
+
+//this void function is really useful; it adds a "0" to the beginning of the number, 
+so that 5 minutes is displayed as "00:05:00",
+
+rather than "00:5 :00"
+
+{
+
+  if(digits < 100) 
+
+  {
+
+    lcd.print("0");
+
+    lcd.print(digits);
+
+  }
+
+  else
+
+  {
+
+    lcd.print(digits);
+
+  }
+
+}
